@@ -15,4 +15,4 @@ The server is configured through environment variables:
  deploy folder, which combines this server with [wireguard-ui](https://github.com/ngoduykhanh/wireguard-ui/).
  The setup will need some customization:
   - Generate a random session secret for wireguard-ui and put it into the docker file
-  - Either enable a portforwarding for port 80 for wireguard-ui, or add it to your preferred reverse proxy (e.g. the excelent [traefik](https://traefik.io/traefik/))
+  - Either enable a portforwarding for port 5000 for wireguard-ui, or add it to your preferred reverse proxy (e.g. the excelent [traefik](https://traefik.io/traefik/)). Keep in mind that the networking for the container is shared with the wireguard container, so port forwardings have to be done on that container.

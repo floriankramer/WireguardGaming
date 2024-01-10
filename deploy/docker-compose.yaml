@@ -7,15 +7,24 @@ services:
     volumes:
       - ./config:/etc/wireguard
     environment:
-      INTERFACE_CONFIG_PATH: /etc/config/wg0.conf
+      INTERFACE_CONFIG_PATH: /etc/wireguard/wg0.conf
       SUBNET: 10.42.42.0/24
+    restart: unless-stopped
+    ports:
+      - 42443:42443/udp
   wireguard-ui:
     image: ngoduykhanh/wireguard-ui:0.6.2
     volumes:
-      - ./config/etc/wireguard
+      - ./config:/etc/wireguard
+      - ./db:/app/db
     environment:
-      SESSION_SECRET: <random data>
       WGUI_SERVER_INTERFACE_ADDRESSES: 10.42.42.1/24
+      WGUI_DEFAULT_CLIENT_ALLOWED_IPS: 10.42.42.0/24
       WGUI_SERVER_LISTEN_PORT: 42443
       WGUI_DEFAULT_CLIENT_USE_SERVER_DNS: false
+    restart: unless-stopped
+    # This allows the ui to show connected clients (it can access the interface)
+    network_mode: service:wireguard
+    cap_add:
+      - NET_ADMIN
 

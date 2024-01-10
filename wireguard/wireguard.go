@@ -190,8 +190,17 @@ func initInterfaceConfig(conf *Config) error {
 
 // applyInterfaceConfig reads the current configuration from disk and applies it to the interface
 func applyInterfaceConfig(conf *Config) error {
-	cmd := exec.Command("wg", "syncconf", interfaceName, conf.InterfaceConfigPath)
-	outp, err := cmd.CombinedOutput()
+	cmd := exec.Command("wg-quick", "strip", conf.InterfaceConfigPath)
+	outp, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("unable to strip the wireguard config: %w", err)
+	}
+
+	const tmpPath = "/tmp/wg0.conf"
+	os.WriteFile(tmpPath, outp, 0755)
+
+	cmd = exec.Command("wg", "syncconf", interfaceName, tmpPath)
+	outp, err = cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("unable to sync the wireguard config: %v: %w", string(outp), err)
 	}
@@ -203,7 +212,7 @@ func setInterfaceUp() error {
 	cmd := exec.Command("ip", "link", "set", interfaceName, "up")
 	outp, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("unable to set the interface up: %w", string(outp), err)
+		return fmt.Errorf("unable to set the interface up: %v - %w", string(outp), err)
 	}
 
 	return nil
@@ -222,7 +231,7 @@ func monitorConfig(conf *Config) error {
 	}
 
 	for {
-		event := <- watcher.Events
+		event := <-watcher.Events
 
 		if event.Has(fsnotify.Write) {
 			log15.Info("Updating the wireguard interface config.")
