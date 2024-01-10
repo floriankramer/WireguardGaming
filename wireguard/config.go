@@ -32,7 +32,7 @@ func LoadConfig() (Config, error) {
 
 		// Set all bits outside the mask to 0
 		for i, v := range net.Mask {
-			net.IP[i] &= ^v
+			net.IP[i] &= v
 		}
 
     conf.Subnet = *net
